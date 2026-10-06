@@ -214,7 +214,10 @@ export const getAllUsers = async (
     // Fetch all users, excluding their passwords
     const users = await User.find({})
       .select("-password")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .limit(50);
+
+    res.json(users);
   } catch (error) {
     res.status(500).json({ message: "Server error fetching users" });
   }
@@ -250,7 +253,7 @@ export const updatedUserRole = async (
 };
 
 //---- ADMIN: DELETE USER-----
-// DELETE /api/admin/user
+// DELETE /api/admin/user/:id
 // permanently remove a user (admin only)
 export const deleteUser = async (
   req: AuthRequest,
@@ -275,7 +278,7 @@ export const deleteUser = async (
     }
 
     await user.deleteOne();
-    res.status(204).json({ message: "User deleted successfully" });
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Server error deleting user", error });
   }

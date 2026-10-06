@@ -5,6 +5,7 @@ import {
   getAllTasks,
   getTaskByCompleted,
   getTaskByTags,
+  updateTask,
 } from "../controller/taskController";
 
 const router = express.Router();
@@ -18,8 +19,11 @@ router.get("/alltasks", getAllTasks);
 //Get Tasks by Tag
 router.get("/task/:tag", getTaskByTags);
 
+//Get Tasks by Tag
+router.put("/edittask/:id", updateTask);
+
 //Get Tasks by Completed
-router.get("/task/:completed", getTaskByCompleted);
+router.get("/completed/:completed", getTaskByCompleted);
 
 //Delete Task
 router.delete("/alltasks/:id", deleteTask);

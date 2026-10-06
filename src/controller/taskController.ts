@@ -54,22 +54,25 @@ export const getTaskByTags = async (
   res: Response,
 ): Promise<void> => {
   try {
-    const validTags = ["Urgent", "Personal", "Work"];
-    const tag = (req.params.tags as string).toLowerCase();
+    const validTags = ["Urgent", "Personal", "Work"] as const;
+    const input = (req.params.tag as string).toLowerCase();
 
-    if (!validTags.includes(tag)) {
+    // match case-insensitively, but keep the original capitalization
+    const tag = validTags.find((t) => t.toLowerCase() === input);
+
+    if (!tag) {
       res.status(400).json({ message: "Invalid Tag" });
       return;
     }
 
-    const tasks = await Task.find({
-      tags: tag as "Urgent" | "Personal" | "Work",
-    }).sort({ createdAt: -1 });
+    const tasks = await Task.find({ tags: tag }).sort({ createdAt: -1 });
 
-    if (!tasks) {
-      res.status(404).json({ message: "Tasks not found" });
+    if (tasks.length === 0) {
+      res.status(404).json({ message: "No tasks found for this tag" });
       return;
     }
+
+    res.status(200).json(tasks);
   } catch (error) {
     res.status(500).json({ message: "Server error fetching tasks by tags" });
   }
@@ -96,6 +99,40 @@ export const getTaskByCompleted = async (req: AuthRequest, res: Response) => {
     res
       .status(500)
       .json({ message: "Server error fetching tasks by completed" });
+  }
+};
+
+// ---- UPDATE TASK -----
+// PUT /api/edittask::id
+export const updateTask = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id as string)) {
+      res.status(400).json({ message: "Invalid Task Id" });
+      return;
+    }
+
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      res.status(404).json({ message: "Task Not Found" });
+      return;
+    }
+
+    // Update only provided fields using the nullish coalescing operator (??)
+    task.title = req.body.title ?? task.title;
+    task.description = req.body.description ?? task.description;
+
+    task.duedate = req.body.duedate ?? task.duedate;
+    task.tags = req.body.tags ?? task.tags;
+    task.completed = req.body.completed ?? task.completed;
+
+    const updatedTask = await task.save();
+    res.json(updatedTask);
+  } catch (error) {
+    res.status(500).json({ message: "Server error updating Task" });
   }
 };
 
