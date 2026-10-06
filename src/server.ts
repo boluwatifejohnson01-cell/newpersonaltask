@@ -4,6 +4,7 @@ import connectDB from "./config/db";
 import dotenv from "dotenv";
 import taskRoute from "./routes/taskRoute";
 import userRoute from "./routes/userRoute";
+import adminRoute from "./routes/adminRoute";
 import { errorHandler } from "./middlewares/errorMiddleware";
 
 dotenv.config();
@@ -45,6 +46,9 @@ app.use("/api", taskRoute);
 
 //User Routes
 app.use("/api", userRoute);
+
+//Admin Routes
+app.use("/api/admin", adminRoute);
 
 const startServer = async (): Promise<void> => {
   try {

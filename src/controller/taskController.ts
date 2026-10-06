@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import dotenv from "dotenv";
 import { AuthRequest } from "../types/indexServer";
 import Task from "../models/Task";
+import mongoose from "mongoose";
 
 // Create Task (POST)
 //POST api/task
@@ -95,5 +96,31 @@ export const getTaskByCompleted = async (req: AuthRequest, res: Response) => {
     res
       .status(500)
       .json({ message: "Server error fetching tasks by completed" });
+  }
+};
+
+//---- DELETE Task----
+// DELETE /api/alltasks/:id
+export const deleteTask = async (
+  req: AuthRequest,
+  res: Response,
+): Promise<void> => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id as string)) {
+      res.status(400).json({ message: "invalid product ID" });
+      return;
+    }
+
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      res.status(404).json({ message: "Task not found" });
+      return;
+    }
+
+    await task.deleteOne();
+    res.status(204).json({ message: "Task deleted Successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error deleting product" });
   }
 };
